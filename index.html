@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SimpleShop</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f0e8;
+      --card: #fff;
+      --ink: #1a1208;
+      --muted: #7a6e5f;
+      --accent: #c8420a;
+      --accent2: #e8a020;
+      --border: #e2d9cc;
+      --radius: 16px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 2.5rem;
+      background: var(--ink);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem; color: var(--bg); letter-spacing: 1px;
+    }
+    .nav-logo span { color: var(--accent2); }
+    .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+    .nav-links a {
+      color: #ccc; text-decoration: none; font-size: 0.9rem;
+      font-weight: 500; transition: color 0.2s;
+    }
+    .nav-links a:hover { color: #fff; }
+    .cart-btn {
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 8px;
+      padding: 0.5rem 1.2rem; font-size: 0.9rem;
+      cursor: pointer; font-weight: 500;
+      transition: background 0.2s;
+    }
+    .cart-btn:hover { background: #a8350a; }
+
+    /* HERO */
+    .hero {
+      padding: 4rem 2.5rem 2rem;
+      display: flex; flex-direction: column; align-items: flex-start;
+      max-width: 900px;
+    }
+    .hero-tag {
+      font-size: 0.75rem; font-weight: 500; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 0.8rem;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      line-height: 1.15; color: var(--ink);
+      margin-bottom: 1rem;
+    }
+    .hero p {
+      color: var(--muted); font-size: 1.05rem; max-width: 480px;
+      line-height: 1.7;
+    }
+
+    /* FILTER BAR */
+    .filter-bar {
+      padding: 1.2rem 2.5rem;
+      display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center;
+    }
+    .filter-label { font-size: 0.8rem; color: var(--muted); font-weight: 500; margin-right: 0.3rem; }
+    .filter-btn {
+      border: 1.5px solid var(--border);
+      background: #fff; border-radius: 30px;
+      padding: 0.4rem 1rem; font-size: 0.82rem;
+      cursor: pointer; font-family: 'DM Sans', sans-serif;
+      color: var(--muted); transition: all 0.2s;
+    }
+    .filter-btn:hover, .filter-btn.active {
+      background: var(--ink); color: #fff; border-color: var(--ink);
+    }
+
+    /* SEARCH */
+    .search-wrap {
+      padding: 0 2.5rem 1.5rem;
+    }
+    .search-input {
+      width: 100%; max-width: 420px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px; padding: 0.65rem 1.1rem;
+      font-size: 0.95rem; font-family: 'DM Sans', sans-serif;
+      background: #fff; color: var(--ink);
+      outline: none; transition: border 0.2s;
+    }
+    .search-input:focus { border-color: var(--accent); }
+    .search-input::placeholder { color: #b5aa9a; }
+
+    /* PRODUCT GRID */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.6rem; padding: 0 2.5rem 3rem;
+    }
+
+    /* PRODUCT CARD */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: transform 0.22s, box-shadow 0.22s;
+      animation: fadeUp 0.4s ease both;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.10);
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .card-img {
+      width: 100%; height: 200px;
+      object-fit: cover; display: block;
+      background: var(--border);
+      transition: transform 0.3s ease;
+    }
+    .card:hover .card-img { transform: scale(1.04); }
+    .card-img-wrap {
+      width: 100%; height: 200px;
+      overflow: hidden;
+      position: relative;
+    }
+    .card-body { padding: 1.1rem 1.2rem 1.3rem; }
+    .card-category {
+      font-size: 0.7rem; font-weight: 500; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 0.4rem;
+    }
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem; margin-bottom: 0.4rem;
+      line-height: 1.3;
+    }
+    .card-desc {
+      font-size: 0.83rem; color: var(--muted);
+      line-height: 1.6; margin-bottom: 0.9rem;
+    }
+    .card-footer {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card-price {
+      font-size: 1.2rem; font-weight: 600; color: var(--ink);
+    }
+    .card-price span {
+      font-size: 0.78rem; font-weight: 400; color: var(--muted);
+      text-decoration: line-through; margin-left: 6px;
+    }
+    .add-btn {
+      background: var(--ink); color: #fff;
+      border: none; border-radius: 8px;
+      padding: 0.45rem 1rem; font-size: 0.82rem;
+      cursor: pointer; font-family: 'DM Sans', sans-serif;
+      font-weight: 500; transition: background 0.2s;
+    }
+    .add-btn:hover { background: var(--accent); }
+
+    /* BADGE */
+    .badge {
+      display: inline-block;
+      background: var(--accent2); color: var(--ink);
+      font-size: 0.65rem; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase;
+      padding: 0.18rem 0.55rem; border-radius: 4px;
+      margin-left: 6px; vertical-align: middle;
+    }
+    /* Badge overlay on image */
+    .badge-overlay {
+      position: absolute; top: 10px; left: 10px;
+      background: var(--accent2); color: var(--ink);
+      font-size: 0.65rem; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase;
+      padding: 0.2rem 0.6rem; border-radius: 4px;
+      z-index: 2;
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(20,15,5,0.55); backdrop-filter: blur(4px);
+      z-index: 200; align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #fff; border-radius: 20px;
+      max-width: 540px; width: 92%; max-height: 90vh;
+      overflow-y: auto; padding: 2rem;
+      animation: popIn 0.25s ease;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.93); opacity: 0; }
+      to   { transform: scale(1);    opacity: 1; }
+    }
+    .modal-img {
+      width: 100%; height: 240px;
+      object-fit: cover; border-radius: 12px;
+      margin-bottom: 1.4rem; display: block;
+      background: var(--border);
+    }
+    .modal-category {
+      font-size: 0.72rem; font-weight: 500; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 0.4rem;
+    }
+    .modal-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.7rem; margin-bottom: 0.6rem;
+    }
+    .modal-price { font-size: 1.4rem; font-weight: 600; margin-bottom: 0.8rem; }
+    .modal-desc { color: var(--muted); line-height: 1.75; margin-bottom: 1.4rem; }
+    .modal-actions { display: flex; gap: 0.8rem; }
+    .modal-add {
+      flex: 1; background: var(--ink); color: #fff;
+      border: none; border-radius: 10px; padding: 0.8rem;
+      font-size: 1rem; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; font-weight: 500;
+      transition: background 0.2s;
+    }
+    .modal-add:hover { background: var(--accent); }
+    .modal-order {
+      flex: 1; background: var(--accent); color: #fff;
+      border: none; border-radius: 10px; padding: 0.8rem;
+      font-size: 1rem; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; font-weight: 500;
+      transition: background 0.2s;
+    }
+    .modal-order:hover { background: #a8350a; }
+    .modal-close {
+      float: right; background: none; border: none;
+      font-size: 1.5rem; cursor: pointer; color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    /* CONTACT SECTION */
+    .contact-section {
+      background: var(--ink); color: var(--bg);
+      padding: 3rem 2.5rem; margin-top: 1rem;
+    }
+    .contact-section h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem; margin-bottom: 0.5rem;
+    }
+    .contact-section p { color: #b5aa9a; margin-bottom: 1.8rem; }
+    .contact-form {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1rem; max-width: 620px;
+    }
+    .contact-form input,
+    .contact-form textarea,
+    .contact-form select {
+      background: #2a2010; border: 1.5px solid #3a3020;
+      color: var(--bg); border-radius: 10px;
+      padding: 0.75rem 1rem; font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem; outline: none;
+      transition: border 0.2s;
+    }
+    .contact-form input:focus,
+    .contact-form textarea:focus,
+    .contact-form select:focus { border-color: var(--accent2); }
+    .contact-form textarea { grid-column: 1 / -1; resize: vertical; min-height: 90px; }
+    .contact-form select { grid-column: 1 / -1; }
+    .contact-form .full { grid-column: 1 / -1; }
+    .submit-btn {
+      grid-column: 1 / -1;
+      background: var(--accent2); color: var(--ink);
+      border: none; border-radius: 10px; padding: 0.85rem;
+      font-size: 1rem; font-weight: 600;
+      cursor: pointer; font-family: 'DM Sans', sans-serif;
+      transition: background 0.2s;
+    }
+    .submit-btn:hover { background: #d4901a; }
+    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .success-msg {
+      display: none; grid-column: 1/-1;
+      background: #1a3a1a; color: #6fcf6f;
+      border-radius: 10px; padding: 1rem;
+      text-align: center; font-weight: 500;
+    }
+    .error-msg {
+      display: none; grid-column: 1/-1;
+      background: #3a1a1a; color: #cf6f6f;
+      border-radius: 10px; padding: 1rem;
+      text-align: center; font-weight: 500;
+    }
+
+    /* FOOTER */
+    footer {
+      background: #0f0b05; color: #6a6055;
+      text-align: center; padding: 1.2rem;
+      font-size: 0.82rem;
+    }
+
+    /* CART SIDEBAR */
+    .cart-sidebar {
+      position: fixed; right: 0; top: 0; bottom: 0;
+      width: 320px; background: #fff;
+      box-shadow: -4px 0 30px rgba(0,0,0,0.12);
+      z-index: 300; transform: translateX(110%);
+      transition: transform 0.3s ease;
+      display: flex; flex-direction: column;
+    }
+    .cart-sidebar.open { transform: translateX(0); }
+    .cart-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1.3rem 1.4rem; border-bottom: 1px solid var(--border);
+    }
+    .cart-header h3 { font-family: 'Playfair Display', serif; font-size: 1.3rem; }
+    .cart-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--muted); }
+    .cart-items { flex: 1; overflow-y: auto; padding: 1rem 1.4rem; }
+    .cart-item {
+      display: flex; gap: 0.8rem; align-items: center;
+      padding: 0.8rem 0; border-bottom: 1px solid var(--border);
+    }
+    .cart-item-thumb {
+      width: 48px; height: 48px; border-radius: 8px;
+      object-fit: cover; background: var(--border); flex-shrink: 0;
+    }
+    .cart-item-info { flex: 1; }
+    .cart-item-name { font-size: 0.9rem; font-weight: 500; }
+    .cart-item-price { font-size: 0.82rem; color: var(--muted); }
+    .cart-item-remove { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 1rem; }
+    .cart-empty { text-align: center; color: var(--muted); padding: 2rem 0; font-size: 0.9rem; }
+    .cart-footer { padding: 1.2rem 1.4rem; border-top: 1px solid var(--border); }
+    .cart-total { font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem; }
+    .checkout-btn {
+      width: 100%; background: var(--accent); color: #fff;
+      border: none; border-radius: 10px; padding: 0.85rem;
+      font-size: 1rem; font-weight: 600; cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .cart-count {
+      background: var(--accent2); color: var(--ink);
+      border-radius: 50%; width: 20px; height: 20px;
+      font-size: 0.72rem; font-weight: 700;
+      display: inline-flex; align-items: center; justify-content: center;
+      margin-left: 5px;
+    }
+
+    /* Spinner for submit */
+    .spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 2px solid rgba(0,0,0,0.2);
+      border-top-color: var(--ink);
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+      vertical-align: middle; margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 600px) {
+      nav { padding: 1rem 1.2rem; }
+      .hero, .filter-bar, .search-wrap, .grid { padding-left: 1.2rem; padding-right: 1.2rem; }
+      .contact-form { grid-template-columns: 1fr; }
+      .contact-form textarea, .contact-form select, .contact-form .full, .submit-btn { grid-column: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Simple<span>Shop</span></div>
+  <div class="nav-links">
+    <a href="#">Home</a>
+    <a href="#contact">Contact</a>
+    <button class="cart-btn" onclick="toggleCart()">🛒 Cart <span class="cart-count" id="cartCount">0</span></button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">✦ New Arrivals 2025</div>
+  <h1>Shop Smart,<br/>Live Better.</h1>
+  <p>Curated products at honest prices. No fluff, no fuss — just things you'll actually love.</p>
+</div>
+
+<!-- SEARCH -->
+<div class="search-wrap">
+  <input class="search-input" type="text" id="searchInput" placeholder="🔍  Search products..." oninput="filterProducts()"/>
+</div>
+
+<!-- FILTER -->
+<div class="filter-bar">
+  <span class="filter-label">Filter:</span>
+  <button class="filter-btn active" onclick="setFilter('All', this)">All</button>
+  <button class="filter-btn" onclick="setFilter('Kitchen', this)">🍳 Kitchen</button>
+  <button class="filter-btn" onclick="setFilter('Tech', this)">💻 Tech</button>
+  <button class="filter-btn" onclick="setFilter('Fashion', this)">👗 Fashion</button>
+  <button class="filter-btn" onclick="setFilter('Health', this)">💪 Health</button>
+</div>
+
+<!-- PRODUCT GRID -->
+<div class="grid" id="productGrid"></div>
+
+<!-- CONTACT / ORDER FORM -->
+<div class="contact-section" id="contact">
+  <h2>Place an Order or Ask a Question</h2>
+  <p>Fill the form below and we'll get back to you within 24 hours.</p>
+  <div class="contact-form" id="contactForm">
+    <input type="text" id="fname" placeholder="Your Name *" required/>
+    <input type="email" id="femail" placeholder="Email Address *" required/>
+    <input type="tel" id="fphone" placeholder="Phone Number"/>
+    <input type="text" id="fcity" placeholder="City"/>
+    <select id="fproduct">
+      <option value="">— Select a Product —</option>
+    </select>
+    <textarea id="fmessage" placeholder="Your message or order details..."></textarea>
+    <button class="submit-btn" id="submitBtn" onclick="submitForm()">Send Order →</button>
+    <div class="success-msg" id="successMsg">✅ Order placed! We'll contact you within 24 hours.</div>
+    <div class="error-msg" id="errorMsg">❌ Something went wrong. Please try again.</div>
+  </div>
+</div>
+
+<footer>© 2025 SimpleShop · Built on AWS · Made with ♥ in India</footer>
+
+<!-- PRODUCT MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    <img class="modal-img" id="modalImg" src="" alt="Product"/>
+    <div class="modal-category" id="modalCategory"></div>
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-price" id="modalPrice"></div>
+    <div class="modal-desc" id="modalDesc"></div>
+    <div class="modal-actions">
+      <button class="modal-add" id="modalAddBtn">Add to Cart</button>
+      <button class="modal-order" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'}); closeModalDirect();">Order Now</button>
+    </div>
+  </div>
+</div>
+
+<!-- CART SIDEBAR -->
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header">
+    <h3>Your Cart</h3>
+    <button class="cart-close" onclick="toggleCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer">
+    <div class="cart-total" id="cartTotal">Total: ₹0</div>
+    <button class="checkout-btn" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'}); toggleCart();">Proceed to Order →</button>
+  </div>
+</div>
+
+<script>
+  // ── PRODUCTS DATA (with real Unsplash images) ──────────────────
+  const products = [
+    {
+      id:1, name:"Non-Stick Kadai Set", category:"Kitchen", emoji:"🍳",
+      price:899, oldPrice:1499, badge:"Best Seller",
+      desc:"Premium non-stick kadai perfect for everyday Indian cooking. Durable, easy to clean, and safe for all stovetops.",
+      img:"https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&auto=format&fit=crop"
+    },
+    {
+      id:2, name:"Wireless Earbuds Pro", category:"Tech", emoji:"🎧",
+      price:1299, oldPrice:2199, badge:"New",
+      desc:"Crystal clear sound with 30hr battery life and active noise cancellation. Compatible with all devices.",
+      img:"https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600&auto=format&fit=crop"
+    },
+    {
+      id:3, name:"Yoga Mat Premium", category:"Health", emoji:"🧘",
+      price:649, oldPrice:999, badge:null,
+      desc:"6mm thick anti-slip yoga mat with carrying strap. Ideal for yoga, pilates, and home workouts.",
+      img:"https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=600&auto=format&fit=crop"
+    },
+    {
+      id:4, name:"Cotton Kurta Set", category:"Fashion", emoji:"👗",
+      price:799, oldPrice:1299, badge:"Trending",
+      desc:"Breathable pure cotton kurta set. Available in multiple colors. Perfect for daily wear and festive occasions.",
+      img:"https://imgs.search.brave.com/TGNp6mSNGLv9SGbq86ZM160N54QmVj58rpW6XxYUhDM/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9mYXJp/ZGFndXB0YS5jb20v/Y2RuL3Nob3AvZmls/ZXMvMl8zMjVjZTlk/Zi1lNjVjLTQwYTkt/OTJkZS01OWJhNmRj/ZTI3NWEuanBnP3Y9/MTc3NDMzNzk3NiZ3/aWR0aD05NjA"
+    },
+    {
+      id:5, name:"USB-C Fast Charger", category:"Tech", emoji:"⚡",
+      price:449, oldPrice:699, badge:null,
+      desc:"65W GaN charger. Charges your phone from 0 to 70% in just 30 minutes. Compact travel-friendly design.",
+      img:"https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=600&auto=format&fit=crop"
+    },
+    {
+      id:6, name:"Steel Water Bottle", category:"Health", emoji:"💧",
+      price:349, oldPrice:599, badge:"Eco",
+      desc:"1 litre double-wall insulated bottle. Keeps water cold 24hrs, hot 12hrs. Leak-proof and BPA-free.",
+      img:"https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&auto=format&fit=crop"
+    },
+    {
+      id:7, name:"Masala Dabba Set", category:"Kitchen", emoji:"🌶️",
+      price:549, oldPrice:899, badge:null,
+      desc:"Stainless steel 7-compartment spice box with airtight lid. A must-have in every Indian kitchen.",
+      img:"https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=600&auto=format&fit=crop"
+    },
+    {
+      id:8, name:"Men's Polo T-Shirt", category:"Fashion", emoji:"👕",
+      price:499, oldPrice:799, badge:"Sale",
+      desc:"Premium pique cotton polo. Slim fit, wrinkle-resistant, and available in 8 colours. Office to casual ready.",
+      img:"https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=600&auto=format&fit=crop"
+    },
+    {
+      id:9, name:"Resistance Band Kit", category:"Health", emoji:"💪",
+      price:399, oldPrice:699, badge:null,
+      desc:"Set of 5 resistance bands with different tension levels. Perfect for home workouts and physiotherapy.",
+      img:"https://images.unsplash.com/photo-1598289431512-b97b0917affc?w=600&auto=format&fit=crop"
+    },
+    {
+      id:10, name:"Bluetooth Speaker", category:"Tech", emoji:"🔊",
+      price:1599, oldPrice:2499, badge:"Hot",
+      desc:"360° surround sound with 20hr battery. Waterproof IPX5 rated. Pair two for stereo mode.",
+      img:"https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=600&auto=format&fit=crop"
+    },
+    {
+      id:11, name:"Pressure Cooker 5L", category:"Kitchen", emoji:"🥘",
+      price:999, oldPrice:1599, badge:null,
+      desc:"Stainless steel ISI-certified pressure cooker with safety valve. Compatible with induction and gas.",
+      img:"https://images.unsplash.com/photo-1585515320310-259814833e62?w=600&auto=format&fit=crop"
+    },
+    {
+      id:12, name:"Floral Saree", category:"Fashion", emoji:"🥻",
+      price:1199, oldPrice:1999, badge:"New",
+      desc:"Soft georgette floral print saree with matching blouse piece. Lightweight and perfect for all occasions.",
+      img:"https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600&auto=format&fit=crop"
+    },
+  ];
+
+  let activeFilter = 'All';
+  let cart = [];
+  let currentProduct = null;
+
+  // ── RENDER PRODUCTS ────────────────────────────────────────────
+  function renderProducts(list) {
+    const grid = document.getElementById('productGrid');
+    if (list.length === 0) {
+      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted)">No products found.</div>`;
+      return;
+    }
+    grid.innerHTML = list.map((p, i) => `
+      <div class="card" style="animation-delay:${i * 0.06}s" onclick="openModal(${p.id})">
+        <div class="card-img-wrap">
+          ${p.badge ? `<span class="badge-overlay">${p.badge}</span>` : ''}
+          <img class="card-img" src="${p.img}" alt="${p.name}" loading="lazy"
+               onerror="this.style.display='none';this.parentNode.innerHTML+='<div style=\'width:100%;height:200px;display:flex;align-items:center;justify-content:center;font-size:3rem;background:linear-gradient(135deg,#f0e6d3,#e8d5b7)\'>${p.emoji}</div>'"/>
+        </div>
+        <div class="card-body">
+          <div class="card-category">${p.category}</div>
+          <div class="card-title">${p.name}</div>
+          <div class="card-desc">${p.desc.substring(0,70)}...</div>
+          <div class="card-footer">
+            <div class="card-price">₹${p.price.toLocaleString()}<span>₹${p.oldPrice.toLocaleString()}</span></div>
+            <button class="add-btn" onclick="event.stopPropagation(); addToCart(${p.id})">+ Add</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function filterProducts() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    let list = products;
+    if (activeFilter !== 'All') list = list.filter(p => p.category === activeFilter);
+    if (q) list = list.filter(p => p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q));
+    renderProducts(list);
+  }
+
+  function setFilter(cat, btn) {
+    activeFilter = cat;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filterProducts();
+  }
+
+  // ── MODAL ──────────────────────────────────────────────────────
+  function openModal(id) {
+    const p = products.find(x => x.id === id);
+    currentProduct = p;
+    document.getElementById('modalImg').src = p.img;
+    document.getElementById('modalImg').alt = p.name;
+    document.getElementById('modalCategory').textContent = p.category;
+    document.getElementById('modalTitle').innerHTML = p.name + (p.badge ? `<span class="badge">${p.badge}</span>` : '');
+    document.getElementById('modalPrice').innerHTML = `₹${p.price.toLocaleString()} <span style="font-size:0.9rem;color:var(--muted);text-decoration:line-through;font-weight:400">₹${p.oldPrice.toLocaleString()}</span>`;
+    document.getElementById('modalDesc').textContent = p.desc;
+    document.getElementById('modalAddBtn').onclick = () => { addToCart(p.id); closeModalDirect(); };
+    document.getElementById('modalOverlay').classList.add('open');
+  }
+  function closeModal(e) {
+    if (e.target === document.getElementById('modalOverlay')) closeModalDirect();
+  }
+  function closeModalDirect() {
+    document.getElementById('modalOverlay').classList.remove('open');
+  }
+
+  // ── CART ───────────────────────────────────────────────────────
+  function addToCart(id) {
+    const p = products.find(x => x.id === id);
+    const existing = cart.find(c => c.id === id);
+    if (existing) existing.qty++;
+    else cart.push({ ...p, qty: 1 });
+    updateCartUI();
+    showToast(`${p.emoji} ${p.name} added to cart!`);
+  }
+
+  function removeFromCart(id) {
+    cart = cart.filter(c => c.id !== id);
+    updateCartUI();
+  }
+
+  function updateCartUI() {
+    const count = cart.reduce((s, c) => s + c.qty, 0);
+    document.getElementById('cartCount').textContent = count;
+    const total = cart.reduce((s, c) => s + c.price * c.qty, 0);
+    document.getElementById('cartTotal').textContent = `Total: ₹${total.toLocaleString()}`;
+    const itemsEl = document.getElementById('cartItems');
+    if (cart.length === 0) {
+      itemsEl.innerHTML = `<div class="cart-empty">Your cart is empty 🛒</div>`;
+    } else {
+      itemsEl.innerHTML = cart.map(c => `
+        <div class="cart-item">
+          <img class="cart-item-thumb" src="${c.img}" alt="${c.name}" onerror="this.style.display='none'"/>
+          <div class="cart-item-info">
+            <div class="cart-item-name">${c.name} ${c.qty > 1 ? `<b>×${c.qty}</b>` : ''}</div>
+            <div class="cart-item-price">₹${(c.price * c.qty).toLocaleString()}</div>
+          </div>
+          <button class="cart-item-remove" onclick="removeFromCart(${c.id})">✕</button>
+        </div>
+      `).join('');
+    }
+  }
+
+  function toggleCart() {
+    document.getElementById('cartSidebar').classList.toggle('open');
+  }
+
+  // ── TOAST ──────────────────────────────────────────────────────
+  function showToast(msg) {
+    const t = document.createElement('div');
+    t.textContent = msg;
+    Object.assign(t.style, {
+      position:'fixed', bottom:'1.5rem', left:'50%', transform:'translateX(-50%)',
+      background:'#1a1208', color:'#f5f0e8', padding:'0.65rem 1.4rem',
+      borderRadius:'30px', fontSize:'0.88rem', fontWeight:'500',
+      zIndex:'999', boxShadow:'0 4px 16px rgba(0,0,0,0.2)',
+      animation:'fadeUp 0.3s ease', whiteSpace:'nowrap'
+    });
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2200);
+  }
+
+  // ── CONTACT FORM ───────────────────────────────────────────────
+  function populateProductSelect() {
+    const sel = document.getElementById('fproduct');
+    products.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.name;
+      opt.textContent = `${p.emoji} ${p.name} — ₹${p.price.toLocaleString()}`;
+      sel.appendChild(opt);
+    });
+  }
+
+  async function submitForm() {
+    const name    = document.getElementById('fname').value.trim();
+    const email   = document.getElementById('femail').value.trim();
+    const phone   = document.getElementById('fphone').value.trim();
+    const city    = document.getElementById('fcity').value.trim();
+    const product = document.getElementById('fproduct').value;
+    const message = document.getElementById('fmessage').value.trim();
+
+    if (!name || !email) { alert('Please enter your name and email.'); return; }
+
+    const payload = { name, email, phone, city, product, message,
+                      orderId: 'ORD-' + Date.now(),
+                      timestamp: new Date().toISOString() };
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Sending...';
+
+    // ── TODO: Replace this URL with your real AWS API Gateway endpoint ──
+    const API_URL = 'https://tn38d75zpf.execute-api.ap-south-1.amazonaws.com/order';
+
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('API error');
+      const data = await res.json();
+      showSuccess();
+    } catch (err) {
+      document.getElementById('errorMsg').style.display = 'block';
+      setTimeout(() => document.getElementById('errorMsg').style.display = 'none', 4000);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = 'Send Order →';
+    }
+  }
+
+  function showSuccess() {
+    document.getElementById('successMsg').style.display = 'block';
+    ['fname','femail','fphone','fcity','fmessage'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('fproduct').selectedIndex = 0;
+    setTimeout(() => document.getElementById('successMsg').style.display = 'none', 5000);
+  }
+
+  // ── INIT ───────────────────────────────────────────────────────
+  renderProducts(products);
+  populateProductSelect();
+  updateCartUI();
+</script>
+</body>
+</html>
