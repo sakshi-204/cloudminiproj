@@ -11,6 +11,6 @@ S3 (serves the HTML/JS)<br>
 API Gateway (receives form POST)<br>
 <br><t>        ↓<br>
 Lambda (Python code runs)<br>
-<t>     ↙   <t>     ↘<br>
+<t>     ↙   <t>     ↘ <br>
 <br>DynamoDB   <t>  SES<br>
-#(saves order) (sends email to you)
+<br>(saves order) <t>(sends email to you)
